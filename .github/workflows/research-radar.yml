@@ -1,0 +1,89 @@
+name: Research Radar
+on:
+  workflow_dispatch:
+    inputs:
+      report:
+        description: Select daily or weekly report
+        type: choice
+        options: [daily, weekly]
+        default: daily
+      dry_run:
+        description: Preview logs only - no email, no history
+        type: boolean
+        default: false
+  schedule:
+    # GitHub Actions supports IANA timezone in schedule (since March 2026).
+    - cron: '0 9 * * *'
+      timezone: 'Asia/Shanghai'
+    - cron: '0 20 * * 0'
+      timezone: 'Asia/Shanghai'
+permissions:
+  contents: write
+concurrency:
+  group: research-radar-state
+  cancel-in-progress: false
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: python -m pip install -r requirements.txt
+      - name: Unit tests
+        run: python -m pytest -q
+      - name: Determine report type
+        id: choose
+        shell: bash
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          INPUT_REPORT: ${{ inputs.report }}
+          SCHEDULE: ${{ github.event.schedule }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          if [[ "$EVENT_NAME" == 'workflow_dispatch' ]]; then
+            echo "mode=${INPUT_REPORT:-daily}" >> "$GITHUB_OUTPUT"
+          elif [[ "$SCHEDULE" == '0 20 * * 0' ]]; then
+            echo 'mode=weekly' >> "$GITHUB_OUTPUT"
+          else
+            echo 'mode=daily' >> "$GITHUB_OUTPUT"
+          fi
+          if [[ "$DRY_RUN" == 'true' ]]; then
+            echo 'dryrun=--dry-run' >> "$GITHUB_OUTPUT"
+          else
+            echo 'dryrun=' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Collect, analyze, and deliver
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_BASE_URL: ${{ vars.DEEPSEEK_BASE_URL }}
+          DEEPSEEK_MODEL: ${{ vars.DEEPSEEK_MODEL }}
+          DEEPSEEK_SCREEN_MODEL: ${{ vars.DEEPSEEK_SCREEN_MODEL }}
+          GH_API_TOKEN: ${{ github.token }}
+          SMTP_HOST: ${{ vars.SMTP_HOST }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+        shell: bash
+        run: python main.py "${{ steps.choose.outputs.mode }}" ${{ steps.choose.outputs.dryrun }}
+      - name: Persist reports and deduplication index
+        if: success() && steps.choose.outputs.dryrun != '--dry-run'
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add archive/
+          if ! git diff --cached --quiet; then
+            git commit -m 'chore(radar): archive research reports'
+            for n in 1 2 3; do
+              git pull --rebase && git push && break
+              if [[ "$n" -eq 3 ]]; then exit 1; fi
+              sleep 2
+            done
+          fi
