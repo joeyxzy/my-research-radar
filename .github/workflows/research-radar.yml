@@ -3,9 +3,9 @@ on:
   workflow_dispatch:
     inputs:
       report:
-        description: Select daily or weekly report
+        description: Daily, weekly, or SMTP connection test (no LLM cost)
         type: choice
-        options: [daily, weekly]
+        options: [daily, weekly, smtp_test]
         default: daily
       dry_run:
         description: Preview logs only - no email, no history
@@ -59,6 +59,7 @@ jobs:
             echo 'dryrun=' >> "$GITHUB_OUTPUT"
           fi
       - name: Collect, analyze, and deliver
+        if: steps.choose.outputs.mode != 'smtp_test'
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           DEEPSEEK_BASE_URL: ${{ vars.DEEPSEEK_BASE_URL }}
@@ -67,13 +68,24 @@ jobs:
           GH_API_TOKEN: ${{ github.token }}
           SMTP_HOST: ${{ vars.SMTP_HOST }}
           SMTP_PORT: ${{ vars.SMTP_PORT }}
+          SMTP_SECURITY: ${{ vars.SMTP_SECURITY }}
           SMTP_USER: ${{ secrets.SMTP_USER }}
           SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
           TO_EMAIL: ${{ secrets.TO_EMAIL }}
         shell: bash
         run: python main.py "${{ steps.choose.outputs.mode }}" ${{ steps.choose.outputs.dryrun }}
+      - name: SMTP-only delivery test (no DeepSeek API call)
+        if: steps.choose.outputs.mode == 'smtp_test'
+        env:
+          SMTP_HOST: ${{ vars.SMTP_HOST }}
+          SMTP_PORT: ${{ vars.SMTP_PORT }}
+          SMTP_SECURITY: ${{ vars.SMTP_SECURITY }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          TO_EMAIL: ${{ secrets.TO_EMAIL }}
+        run: python -m radar.send
       - name: Persist reports and deduplication index
-        if: success() && steps.choose.outputs.dryrun != '--dry-run'
+        if: success() && steps.choose.outputs.dryrun != '--dry-run' && steps.choose.outputs.mode != 'smtp_test'
         shell: bash
         run: |
           git config user.name 'github-actions[bot]'
