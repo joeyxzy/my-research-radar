@@ -169,3 +169,89 @@ def test_workflow_uses_deepseek_secrets_not_openai():
     assert "secrets.DEEPSEEK_API_KEY" in content
     assert "secrets.OPENAI_API_KEY" not in content
     assert "vars.DEEPSEEK_MODEL" in content
+
+
+def _set_smtp_env(monkeypatch, *, user="10235102432@stu.ecnu.edu.cn", host="smtphz.qiye.163.com", port="994", security="auto"):
+    monkeypatch.setenv("SMTP_USER", user)
+    monkeypatch.setenv("SMTP_PASSWORD", "fake-client-app-password")
+    monkeypatch.setenv("TO_EMAIL", user)
+    if host is None:
+        monkeypatch.delenv("SMTP_HOST", raising=False)
+    else:
+        monkeypatch.setenv("SMTP_HOST", host)
+    if port is None:
+        monkeypatch.delenv("SMTP_PORT", raising=False)
+    else:
+        monkeypatch.setenv("SMTP_PORT", port)
+    monkeypatch.setenv("SMTP_SECURITY", security)
+
+
+def test_ecnu_student_mail_requires_verified_host_and_port(monkeypatch):
+    from radar.send import smtp_settings
+    _set_smtp_env(monkeypatch, host=None)
+    with pytest.raises(RuntimeError, match="ECNU student SMTP_HOST"):
+        smtp_settings()
+    _set_smtp_env(monkeypatch, port=None)
+    with pytest.raises(RuntimeError, match="ECNU student SMTP_HOST"):
+        smtp_settings()
+
+
+def test_smtp_994_is_implicit_ssl_and_not_starttls(monkeypatch):
+    import radar.send as sender
+    _set_smtp_env(monkeypatch)
+    calls = []
+
+    class FakeSSL:
+        def __init__(self, host, port, timeout, context):
+            assert context.verify_mode == __import__("ssl").CERT_REQUIRED
+            calls.append(("ssl", host, port, timeout))
+        def __enter__(self): return self
+        def __exit__(self, exc_type, exc_value, tb): return False
+        def login(self, user, password): calls.append(("login", user, password))
+        def send_message(self, message): calls.append(("sent", message["To"], message["Subject"]))
+
+    monkeypatch.setattr(sender.smtplib, "SMTP_SSL", FakeSSL)
+    monkeypatch.setattr(sender.smtplib, "SMTP", lambda *args, **kwargs: pytest.fail("STARTTLS used for 994"))
+    sender.send_test_email()
+    assert calls[0] == ("ssl", "smtphz.qiye.163.com", 994, 30)
+    assert calls[-1][1] == "10235102432@stu.ecnu.edu.cn"
+
+
+def test_smtp_587_uses_starttls_before_auth(monkeypatch):
+    import radar.send as sender
+    _set_smtp_env(monkeypatch, port="587")
+    calls = []
+
+    class FakeSMTP:
+        def __init__(self, *args, **kwargs): calls.append("connect")
+        def __enter__(self): return self
+        def __exit__(self, *args): return False
+        def ehlo(self): calls.append("ehlo")
+        def starttls(self, context):
+            assert context.verify_mode == __import__("ssl").CERT_REQUIRED
+            calls.append("starttls")
+        def login(self, *args): calls.append("login")
+        def send_message(self, *args): calls.append("send")
+
+    monkeypatch.setattr(sender.smtplib, "SMTP", FakeSMTP)
+    monkeypatch.setattr(sender.smtplib, "SMTP_SSL", lambda *args, **kwargs: pytest.fail("SSL used for 587"))
+    sender.send_test_email()
+    assert calls == ["connect", "ehlo", "starttls", "ehlo", "login", "send"]
+
+
+def test_invalid_smtp_security_and_port(monkeypatch):
+    from radar.send import smtp_settings
+    _set_smtp_env(monkeypatch, security="none")
+    with pytest.raises(ValueError, match="SMTP_SECURITY"):
+        smtp_settings()
+    _set_smtp_env(monkeypatch, port="not-a-port")
+    with pytest.raises(ValueError, match="SMTP_PORT"):
+        smtp_settings()
+
+
+def test_smtp_only_workflow_does_not_run_paid_analysis_or_commit():
+    content = (report.ROOT / ".github/workflows/research-radar.yml").read_text()
+    assert "options: [daily, weekly, smtp_test]" in content
+    assert "python -m radar.send" in content
+    assert "steps.choose.outputs.mode != 'smtp_test'" in content
+    assert "SMTP_SECURITY: ${{ vars.SMTP_SECURITY }}" in content

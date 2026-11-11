@@ -2,14 +2,26 @@
 
 为研究 VLA / Embodied AI / WAM / MLSys / GPU 推理系统的人设计。它从多种公开原始来源采集技术信号，**经过两阶段模型筛选与（尽可能的）正文补充后**发完整中文邮件，周报依据真实日报及跨周主题账本分析，而不是重新随机搜新闻。
 
-> **状态**：这是可部署的代码模板，已通过 12 项离线模拟测试；**尚未使用你的 DeepSeek API Key、SMTP 凭据做端到端测试**。必须自行在私有仓库设置密钥后才能定时发送。GitHub Actions 是尽力调度，无法保证整点精确到达。
+> **状态**：这是可部署的代码模板，已通过 17 项离线模拟测试；**尚未使用你的 DeepSeek API Key、SMTP 凭据做端到端测试**。必须自行在私有仓库设置密钥后才能定时发送。GitHub Actions 是尽力调度，无法保证整点精确到达。
+
+## ECNU 学生邮箱 SMTP 设置与验证（请先读）
+
+**结论**：学生邮箱网页登录地址 `https://mail.stu.ecnu.edu.cn/` 是学校官方确认的，但学校 2026 年公开的**学生邮箱**说明没有确认具体 SMTP 域名、端口、客户端登录权限或授权码获取步骤。教职工邮箱官方公布的 `smtphz.qiye.163.com:994`（SSL）**仅适用于其教职工指南**；不要在未经验证的情况下声称该地址对学生邮箱有效。
+
+1. 登录学生邮箱网页，在“设置 / 账号与安全 / 客户端设置”（实际名称可能不同）查看是否有 SMTP 登录权限和“生成客户端授权密码”。若有，开启并生成一个用于 Research Radar 的独立密码，切勿直接把学校统一身份认证密码上传到 GitHub。
+2. 以学校学生邮箱界面提供的 SMTP 服务器、端口和加密方式为准；如果没有，联系 `its@ecnu.edu.cn` / 021-62233081，问“学生邮箱是否支持 GitHub Actions 云主机上的第三方 SMTP 发送？具体主机、端口、TLS 模式和应用授权密码在哪里获取？”
+3. 在 GitHub `Settings → Secrets and variables → Actions → Secrets` 中创建 `SMTP_USER`、`SMTP_PASSWORD`、`TO_EMAIL`（均可用 `10235102432@stu.ecnu.edu.cn` 作前后两个邮箱值；密码使用**客户端授权密码**）。
+4. 在同一页面 **Variables**（不是 Secrets）中设置 `SMTP_HOST`、`SMTP_PORT` 和可选 `SMTP_SECURITY`。只在学生端的说明或学校技术支持确认时，才填入相应地址；不要把学生邮箱的网页登录 URL 当作 SMTP 主机。`SMTP_SECURITY` 可取 `ssl` 或 `starttls`，默认 `auto` 会将端口 `465`、`994` 识别为隐式 TLS，其余端口使用 STARTTLS，永远不会明文认证。
+5. 在 `Actions → Research Radar → Run workflow` 中选择 `report=smtp_test`（不需 DeepSeek API，不改归档），发一封测试邮件。先测通 SMTP，再运行真正的 `daily`。
+
+如果学生邮箱没有 SMTP 权限，你仍然可以设置 `TO_EMAIL=10235102432@stu.ecnu.edu.cn`，用另一个支持 SMTP 的邮箱（如 QQ、163 或专用邮件服务）作为发件方。不能通过修改 Python 程序绕过学校服务器对 SMTP 的限制。
 
 ## 0. 默认日程（已配置，无需改）
 
 - 每天 **09:00 北京时间**，发送 Daily Radar（含周日）
 - 每周日 **20:00 北京时间**，发送 Weekly Review
 - 采用 GitHub Actions 2026 年支持的 `schedule.timezone: Asia/Shanghai`。
-- 两个任务均支持 `Actions > Research Radar > Run workflow` 手动触发，也可设置 `dry_run: true` 仅预览生成结果、不发送邮件及修改归档（**dry run 仍使用付费 LLM API**）。
+- 两个定时任务均支持 `Actions > Research Radar > Run workflow` 手动触发；同时添加了 `report=smtp_test` 仅测试邮件发送，**不调用 DeepSeek API**，也可设置 `dry_run: true` 仅预览生成结果、不发送邮件及修改归档（**dry run 仍使用付费 LLM API**）。
 
 ## 1. 采集源和研究范围
 
@@ -53,9 +65,9 @@ git push -u origin main
 | `SMTP_PASSWORD` | SMTP **专用**授权凭据 | 不要填日常登录密码，不要粘贴到聊天里 |
 | `TO_EMAIL` | 目标收件邮箱 | 可以等于 `SMTP_USER` |
 
-默认使用 Gmail SMTP `smtp.gmail.com:465`（SSL）。Gmail 账户可能需要先开两步验证，再在其支持条件下创建**应用专用密码**。这和在 ChatGPT 里连接 Gmail 是两回事，ChatGPT 的 Gmail 授权**不会自动传给 GitHub Actions**。
+对普通 Gmail 发件账号，默认 SMTP 为 `smtp.gmail.com:465`（SSL）；但对 `@stu.ecnu.edu.cn` 学生发件账号，程序会强制要求设置 `SMTP_HOST` 和 `SMTP_PORT`，避免把未确认的 ECNU 学生邮箱参数误设为 Gmail。Gmail 账户需要应用专用密码；ChatGPT 中连接 Gmail 不会自动把该授权传给 GitHub Actions。
 
-如改用其他 SMTP 邮件服务，在 `Repository variables` 中设置 `SMTP_HOST` 和 `SMTP_PORT`。支持 465 SSL 或其他端口 STARTTLS（例如 587），前提是服务商允许用户名/密码认证。
+如改用其他 SMTP 邮件服务，在 `Repository variables` 中设置 `SMTP_HOST`、`SMTP_PORT`，必要时设置 `SMTP_SECURITY`=`ssl` 或 `starttls`。支持 `465/994` 等隐式 TLS 端口及 `587` 等 STARTTLS 端口，前提是服务商明确允许对应方式和用户名/密码认证。
 
 在 `Repository variables` 中按需设置（非必需）：
 
@@ -71,9 +83,10 @@ git push -u origin main
 
 ### 2.4 第一次测试
 
-1. 打开 `Actions → Research Radar → Run workflow`，先选择 `report=daily`, `dry_run=true`。检查 `Unit tests` 和 `Collect, analyze, and deliver` 日志。即使没有 SMTP 凭据，这一步也能检验模型、来源与报告内容。
-2. 再运行一次 `report=daily`, `dry_run=false`；查看收件箱和垃圾邮件。成功后应出现 `archive/daily/YYYY-MM-DD.json` 和更新后的 `archive/seen.json`。
-3. 在一周有足够日报积累后，选择 `report=weekly`, `dry_run=false`。每周更新 `archive/weekly/` 和 `archive/trends.json`。
+1. **先验证邮件**：打开 `Actions → Research Radar → Run workflow`，选择 `report=smtp_test`；它仅发送一封测试邮件，不花 DeepSeek API 费用，也不会更新历史记录。若学生 SMTP 尚未获批，测试会失败，不代表报告逻辑有问题。
+2. **再测试模型和采集**：选择 `report=daily`, `dry_run=true`。检查 `Unit tests` 和 `Collect, analyze, and deliver` 日志。即使没有 SMTP 凭据，这一步也能检验模型、来源与报告内容。
+3. 再运行一次 `report=daily`, `dry_run=false`；查看收件箱和垃圾邮件。成功后应出现 `archive/daily/YYYY-MM-DD.json` 和更新后的 `archive/seen.json`。
+4. 在一周有足够日报积累后，选择 `report=weekly`, `dry_run=false`。每周更新 `archive/weekly/` 和 `archive/trends.json`。
 
 初次手动在当天发送日报后，同一天的定时任务会检测已归档日报，**不重复发送**。如果邮件实际发送成功、但历史 `git push` 因仓库权限失败，则下一次可能重复发信，务必检查 Actions 日志。
 
@@ -115,7 +128,7 @@ tests/test_radar.py
 
 ## 5. 常见问题
 
-- **没收到邮件？** 查看 GitHub Actions 的 `Collect, analyze, and deliver` 日志；检查 2FA/应用密码、SMTP host/port、垃圾箱。因为凭据不展示在日志里，请不要打印 Secrets。
+- **没收到邮件？** 先单独运行 `report=smtp_test`，查看 `SMTP-only delivery test` 日志；确认学生账号的 SMTP 权限、客户端授权密码、SMTP host/port/TLS 方式、垃圾箱。不要在日志里打印 Secrets。
 - **周报没内容？** 必须先有日报归档；首次部署的第一个星期的周报可能只有部分天数，正常。
 - **提醒邮件主题有结果但内容不够深？** 主要原因可能是原文只拿到摘要。可进一步加入 arXiv PDF 正文解析、OpenReview、PR patch 和作者博客技术报告，但需要更高的请求预算和来源质量控制。
 - **费用？** GitHub 私有仓库使用 Actions 有计划配额，DeepSeek API 按 token 收费，SMTP 服务可能收费。实际成本随每天候选量、文章抓取量和模型选择变化；参考各平台官方计费页面。
