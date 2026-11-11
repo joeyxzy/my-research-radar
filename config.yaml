@@ -1,0 +1,116 @@
+# Personal Research Radar: edit freely. Missing RSS sources fail gracefully.
+timezone: Asia/Shanghai
+lookback_hours: 84
+selection_pool_max: 120
+shortlist_max: 9
+fulltext_max: 8
+keywords:
+  core:
+    - vision language action
+    - vision-language-action
+    - vla
+    - action chunk
+    - action expert
+    - world action model
+    - robot inference
+    - inference latency
+    - llm serving
+    - asynchronous control
+    - real-time control
+    - real time chunking
+    - robot learning
+    - ml systems
+    - mlsys
+    - vllm
+    - sglang
+    - cuda graph
+    - torch compile
+    - flash attention
+    - gpu performance
+    - robotics system
+    - embodied ai
+  adjacent:
+    - world model
+    - foundation model
+    - reinforcement learning
+    - in-context learning
+    - agentic robotics
+    - sim-to-real
+    - multimodal
+    - diffusion policy
+    - dexterous manipulation
+    - imitation learning
+    - video generation
+    - planning
+    - memory
+  explore:
+    - agent
+    - computer use
+    - reasoning
+    - new architecture
+    - inference
+    - hardware
+    - robotics
+    - benchmark
+    - transformer
+    - autonomous
+arxiv_categories:
+  - cs.RO
+  - cs.DC
+  - cs.PF
+  - cs.AI
+  - cs.LG
+  - cs.CV
+  - cs.CL
+  - cs.OS
+huggingface_daily_papers: true
+github_repositories:
+  - Physical-Intelligence/openpi
+  - huggingface/lerobot
+  - NVIDIA/Isaac-GR00T
+  - openvla/openvla
+  - vllm-project/vllm
+  - sgl-project/sglang
+  - flashinfer-ai/flashinfer
+  - Dao-AILab/flash-attention
+  - pytorch/pytorch
+  - triton-lang/triton
+  - NVIDIA/TensorRT-LLM
+  - NVIDIA/cutlass
+  - pytorch/ao
+  - microsoft/DeepSpeed
+  - ggml-org/llama.cpp
+# Only publicly documented or commonly used feed URL patterns; sources may change.
+# To add a publication without an RSS feed, place its public releases repo in github_repositories
+# or use one of the Google News discovery searches (never count news as primary verification).
+rss_feeds:
+  - name: Hugging Face Blog
+    kind: blog
+    url: https://huggingface.co/blog/feed.xml
+  - name: NVIDIA Developer Blog
+    kind: blog
+    url: https://developer.nvidia.com/blog/feed/
+  - name: OpenAI News / Research / Engineering
+    kind: blog
+    url: https://openai.com/news/rss.xml
+  - name: PyTorch Blog
+    kind: blog
+    url: https://pytorch.org/blog/feed/
+  - name: Berkeley AI Research Blog
+    kind: blog
+    url: https://bair.berkeley.edu/blog/feed.xml
+  - name: SemiAnalysis
+    kind: blog
+    url: https://semianalysis.com/feed/
+  - name: The Robot Report
+    kind: discovery
+    url: https://www.therobotreport.com/feed/
+  - name: Google News - embodied foundation models
+    kind: discovery
+    url: https://news.google.com/rss/search?q=robotics+foundation+model+OR+vision+language+action&hl=en-US&gl=US&ceid=US:en
+  - name: Google News - ML systems and GPU infra
+    kind: discovery
+    url: https://news.google.com/rss/search?q=LLM+inference+systems+GPU+OR+MLSys&hl=en-US&gl=US&ceid=US:en
+  - name: Google News - leading robotics research labs
+    kind: discovery
+    url: https://news.google.com/rss/search?q=Physical+Intelligence+robot+OR+DeepMind+robotics+OR+NVIDIA+GR00T&hl=en-US&gl=US&ceid=US:en
