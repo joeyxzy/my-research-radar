@@ -1,1 +1,11 @@
-{}
+{
+  "https://github.com/sgl-project/sglang/pull/50684": "2026-11-21T07:51:35.842722+00:00",
+  "https://github.com/vllm-project/vllm/pull/68831": "2026-11-21T07:51:35.842722+00:00",
+  "https://github.com/vllm-project/vllm/pull/62516": "2026-11-21T07:51:35.842722+00:00",
+  "https://github.com/vllm-project/vllm/pull/61214": "2026-11-21T07:51:35.842722+00:00",
+  "https://huggingface.co/blog/moe-expert-streaming": "2026-11-21T07:51:35.842722+00:00",
+  "arxiv:2611.26239": "2026-11-21T07:51:35.842722+00:00",
+  "arxiv:2611.25980": "2026-11-21T07:51:35.842722+00:00",
+  "arxiv:2611.26444": "2026-11-21T07:51:35.842722+00:00",
+  "https://github.com/NVIDIA/TensorRT-LLM/releases/tag/v1.3.0": "2026-11-21T07:51:35.842722+00:00"
+}
