@@ -7,5 +7,14 @@
   "arxiv:2611.26239": "2026-11-21T07:51:35.842722+00:00",
   "arxiv:2611.25980": "2026-11-21T07:51:35.842722+00:00",
   "arxiv:2611.26444": "2026-11-21T07:51:35.842722+00:00",
-  "https://github.com/NVIDIA/TensorRT-LLM/releases/tag/v1.3.0": "2026-11-21T07:51:35.842722+00:00"
+  "https://github.com/NVIDIA/TensorRT-LLM/releases/tag/v1.3.0": "2026-11-21T07:51:35.842722+00:00",
+  "https://github.com/huggingface/lerobot/pull/5416": "2026-11-22T07:38:56.409379+00:00",
+  "https://github.com/vllm-project/vllm/pull/67976": "2026-11-22T07:38:56.409379+00:00",
+  "https://github.com/vllm-project/vllm/pull/69065": "2026-11-22T07:38:56.409379+00:00",
+  "https://github.com/sgl-project/sglang/pull/51348": "2026-11-22T07:38:56.409379+00:00",
+  "https://github.com/sgl-project/sglang/pull/50929": "2026-11-22T07:38:56.409379+00:00",
+  "https://github.com/sgl-project/sglang/pull/51936": "2026-11-22T07:38:56.409379+00:00",
+  "https://github.com/flashinfer-ai/flashinfer/pull/9780": "2026-11-22T07:38:56.409379+00:00",
+  "https://github.com/vllm-project/vllm/pull/68921": "2026-11-22T07:38:56.409379+00:00",
+  "https://github.com/sgl-project/sglang/pull/52054": "2026-11-22T07:38:56.409379+00:00"
 }
