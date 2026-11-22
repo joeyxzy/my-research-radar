@@ -1,1 +1,89 @@
-{"themes":{}}
+{
+  "themes": {
+    "intermediate-state-embodied-eval": {
+      "name": "具身策略评估转向中间状态与能力归因",
+      "history": [
+        {
+          "week": "2026-11-23",
+          "direction": "emerging",
+          "confidence": "medium",
+          "claim": "本周三项一手工作一致反对以最终成功率或重建误差作为充分指标：SAFI 用中途接管与 hold 动作暴露初始状态拒绝策略的漏洞，Mind2Act 将失败归因到 Mind/Act/组合三视图，AFFECT 要求世界模型对动作扰动响应与真实一致。均为作者自述，未见开放代码复现。",
+          "evidence_urls": [
+            "https://huggingface.co/papers/2611.26239",
+            "https://huggingface.co/papers/2611.26444",
+            "https://huggingface.co/papers/2611.25980"
+          ],
+          "next_question": "打断/接管评测在真机上能否稳定复现（hold 是否引起滑动、retained 技能是否退化），且 AFFECT 的动作效果相关性提升能否跨种子与跨数据集成立？"
+        }
+      ]
+    },
+    "streaming-action-decoding-vla": {
+      "name": "VLA 动作解码向时间有序流式前缀演进",
+      "history": [
+        {
+          "week": "2026-11-23",
+          "direction": "emerging",
+          "confidence": "low",
+          "claim": "LeRobot NAT VLA PR 引入时间因果 neural action tokenizer，使 action chunk 前几个 token 可先解码执行，并支持 RTC 预生成下一 chunk；作者自述首动作约 40ms、chunk 切换动作差异下降。但权重未公开、无真实机器人成功率，仅单实现样本。",
+          "evidence_urls": [
+            "https://github.com/huggingface/lerobot/pull/5416"
+          ],
+          "next_question": "流式前缀在 LIBERO 与真机上的任务成功率是否不低于整 chunk 解码，首动作延迟收益能否在 30Hz 控制环下保持且不引入动作不一致？"
+        }
+      ]
+    },
+    "dynamic-shape-encoder-graph": {
+      "name": "多模态/MoE 推理 runtime 从固定 shape 图化转向可变预算图集",
+      "history": [
+        {
+          "week": "2026-11-23",
+          "direction": "growing",
+          "confidence": "medium",
+          "claim": "本周多个 vLLM/SGLang PR 把 CUDA graph 从固定视觉 tower 扩展到音频 tower、可变原生分辨率视觉与 MoE prefill，并用图外索引预计算、checkpoint 导出与 runtime 参数化修复动态输入下的回退与 JIT。性能均为开发者自述，未独立复现。",
+          "evidence_urls": [
+            "https://github.com/vllm-project/vllm/pull/68831",
+            "https://github.com/vllm-project/vllm/pull/67976",
+            "https://github.com/sgl-project/sglang/pull/50684",
+            "https://github.com/vllm-project/vllm/pull/68921",
+            "https://github.com/sgl-project/sglang/pull/50929"
+          ],
+          "next_question": "可变预算图集与 runtime 参数化 kernel 在更大分辨率/音频变化范围下，P99 延迟收益与数值一致性是否同时成立，图捕获显存与热身成本是否可接受？"
+        }
+      ]
+    },
+    "moe-expert-placement-quant": {
+      "name": "MoE 专家量化与流式放置优化尾延迟",
+      "history": [
+        {
+          "week": "2026-11-23",
+          "direction": "growing",
+          "confidence": "medium",
+          "claim": "HF 专家流式博客展示磁盘 slot pool + 路由预取在低内存 Mac 上运行远超内存的 MoE；vLLM MXFP8 MoE PR 与 SGLang 多波 cluster top-k PR 分别压缩专家权重、处理长尾行。数据为作者/个人环境自述，路由热点与尾延迟的跨负载稳健性未验证。",
+          "evidence_urls": [
+            "https://huggingface.co/blog/moe-expert-streaming",
+            "https://github.com/vllm-project/vllm/pull/61214",
+            "https://github.com/sgl-project/sglang/pull/51348",
+            "https://github.com/NVIDIA/TensorRT-LLM/releases/tag/v1.3.0"
+          ],
+          "next_question": "在长 horizon 控制推理中专家热点是否稳定，流式放置与 MXFP8/NVFP4 量化叠加后 expert miss 率与 P99 步延迟是否仍优于纯 GPU 驻留？"
+        }
+      ]
+    },
+    "closed-loop-incremental-scheduler": {
+      "name": "闭环增量式调度：取消/恢复与多候选 rollout",
+      "history": [
+        {
+          "week": "2026-11-23",
+          "direction": "emerging",
+          "confidence": "low",
+          "claim": "世界模型需要多候选并行 rollout 并按动作扰动排序以支持离线评估，但本周 runtime 证据（流式动作、encoder 图化、专家预取）尚未覆盖环境反馈中断与重新规划的调度接口，融合方向仍属推测，缺一手实现。",
+          "evidence_urls": [
+            "https://huggingface.co/papers/2611.25980",
+            "https://huggingface.co/papers/2611.26444"
+          ],
+          "next_question": "是否存在可复现系统同时支持增量观测中断、策略重查询与世界模型多候选并行排序，其调度开销是否低于端到端 VLA 单次推理？"
+        }
+      ]
+    }
+  }
+}
