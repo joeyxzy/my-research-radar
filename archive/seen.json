@@ -40,5 +40,11 @@
   "arxiv:2611.33635": "2026-11-26T09:02:32.157893+00:00",
   "https://github.com/vllm-project/vllm/pull/68074": "2026-11-26T09:02:32.157893+00:00",
   "https://github.com/flashinfer-ai/flashinfer/releases/tag/v0.7.6": "2026-11-26T09:02:32.157893+00:00",
-  "arxiv:2611.33816": "2026-11-26T09:02:32.157893+00:00"
+  "arxiv:2611.33816": "2026-11-26T09:02:32.157893+00:00",
+  "https://github.com/flashinfer-ai/flashinfer/pull/9848": "2026-11-27T09:15:50.312743+00:00",
+  "https://github.com/vllm-project/vllm/pull/69735": "2026-11-27T09:15:50.312743+00:00",
+  "https://github.com/vllm-project/vllm/pull/69170": "2026-11-27T09:15:50.312743+00:00",
+  "https://github.com/vllm-project/vllm/pull/69112": "2026-11-27T09:15:50.312743+00:00",
+  "https://github.com/NVIDIA/TensorRT-LLM/pull/22396": "2026-11-27T09:15:50.312743+00:00",
+  "https://github.com/ggml-org/llama.cpp/releases/tag/b12801": "2026-11-27T09:15:50.312743+00:00"
 }
